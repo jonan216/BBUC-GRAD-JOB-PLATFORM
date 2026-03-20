@@ -1,0 +1,182 @@
+{
+  "admins": [
+    {
+      "admin_id": 1773835044936,
+      "name": "System Administrator",
+      "email": "akampurirajonan06@gmail.com",
+      "password": "Jonan@1973",
+      "role": "admin"
+    }
+  ],
+  "employers": [
+    {
+      "employer_id": 1773836548673,
+      "company_name": "CYBER TEC UG",
+      "industry": "TECHNOLOGY",
+      "email": "ktechbrian@gmail.com",
+      "phone": "00000000",
+      "location": "kabale",
+      "password": "password123",
+      "status": "approved"
+    },
+    {
+      "employer_id": 1773831271642,
+      "company_name": "JONATEC-UG",
+      "industry": "TECHNOLOGY",
+      "email": "jonanakampurira0@gmail.com",
+      "phone": "00000000",
+      "location": "kabale",
+      "password": "password123",
+      "status": "approved"
+    },
+    {
+      "employer_id": 1773923046228,
+      "company_name": "Test Corp",
+      "industry": "Tech",
+      "email": "employer@test.com",
+      "phone": "00000000",
+      "location": "Kampala",
+      "password": "password123",
+      "status": "rejected"
+    },
+    {
+      "employer_id": 1773937826399,
+      "company_name": "AGROTEC",
+      "industry": "AGRICULTURE",
+      "email": "akampurirajonan26@gmail.com",
+      "phone": "00000000",
+      "location": "kabale",
+      "password": "password123",
+      "status": "approved"
+    },
+    {
+      "employer_id": 1773938305969,
+      "company_name": "AGROTEC",
+      "industry": "AGRICULTURE",
+      "email": "agrotec26@gmail.com",
+      "phone": "00000000",
+      "location": "kabale",
+      "password": "password123",
+      "status": "approved"
+    },
+    {
+      "employer_id": 1773938915494,
+      "company_name": "medicus",
+      "industry": "health",
+      "email": "medicus@gmail.com",
+      "phone": "00000000",
+      "location": "kabale",
+      "password": "password123",
+      "status": "approved"
+    }
+  ],
+  "graduates": [
+    {
+      "graduate_id": 1773830178991,
+      "student_number": "BSIT/2023/036",
+      "full_name": "AKAMPURIRA JONA",
+      "email": "akampurirajonan67@gmail.com",
+      "phone": "00000000",
+      "course": "bsit",
+      "password": "password123",
+      "status": "approved",
+      "created_at": "2026-03-18T10:36:18.991Z"
+    },
+    {
+      "graduate_id": 1773831819831,
+      "student_number": "BSIT/2023/036",
+      "full_name": "AKAMPURIRA JONAN",
+      "email": "akampurirajonan60@gmail.com",
+      "phone": "00000000",
+      "course": "BSIT",
+      "password": "password123",
+      "status": "approved",
+      "created_at": "2026-03-18T11:03:39.831Z"
+    },
+    {
+      "graduate_id": 1773832334795,
+      "student_number": "BSIT/2022/023",
+      "full_name": "ORISHABA BETUS",
+      "email": "betusorishaba@gmail.com",
+      "phone": "00000000",
+      "course": "bsit",
+      "password": "password123",
+      "status": "approved",
+      "created_at": "2026-03-18T11:12:14.795Z"
+    },
+    {
+      "graduate_id": 1773906663952,
+      "student_number": "BBA/2023/036",
+      "full_name": "NATUKUNDA ESTER",
+      "email": "natukundaester@gmail.com",
+      "phone": "00000000",
+      "course": "bba",
+      "password": "password123",
+      "status": "approved",
+      "created_at": "2026-03-19T07:51:03.952Z",
+      "cv_url": "/uploads/cv-1773906663952-1773927620890-295242865.docx"
+    },
+    {
+      "graduate_id": 1773920923924,
+      "student_number": "BBUC/2024/001",
+      "full_name": "Graduate Test",
+      "email": "graduate@test.com",
+      "phone": "00000000",
+      "course": "Computer Science",
+      "password": "password123",
+      "status": "approved",
+      "created_at": "2026-03-19T11:48:43.924Z"
+    },
+    {
+      "graduate_id": 1774007022263,
+      "student_number": "S123",
+      "full_name": "Test Graduate",
+      "email": "test_1774007021689@example.com",
+      "phone": "1234567890",
+      "course": "IT",
+      "password": "$2b$10$r.hg3ENiQPTsDhHm8ReHLe2JdVTS7ZEodE3w4MxzSpltWDqpUS/.2",
+      "status": "pending",
+      "created_at": "2026-03-20T11:43:42.263Z"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "1773905292057",
+      "employer_id": 1773831271642,
+      "company_name": "JONATEC-UG",
+      "title": "software engineer",
+      "description": "i want a minimum degree in any course under computer technology",
+      "location": "rubanda",
+      "salary": "3m",
+      "requirements": [
+        "system automation"
+      ],
+      "status": "approved",
+      "created_at": "2026-03-19T07:28:12.057Z"
+    }
+  ],
+  "applications": [
+    {
+      "id": "1773906756152",
+      "job_id": "1773905292057",
+      "graduate_id": 1773906663952,
+      "employer_id": 1773831271642,
+      "graduate_name": "NATUKUNDA ESTER",
+      "job_title": "software engineer",
+      "company_name": "JONATEC-UG",
+      "status": "shortlisted",
+      "applied_at": "2026-03-19T07:52:36.152Z"
+    },
+    {
+      "id": "1773921534907",
+      "job_id": "1773905292057",
+      "graduate_id": 1773920923924,
+      "employer_id": 1773831271642,
+      "graduate_name": "Graduate Test",
+      "job_title": "software engineer",
+      "company_name": "JONATEC-UG",
+      "status": "shortlisted",
+      "applied_at": "2026-03-19T11:58:54.914Z"
+    }
+  ]
+}
