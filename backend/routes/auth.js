@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { getDb, saveDb } = require('../database');
+const supabase = require('../supabase');
 
 const { body, validationResult } = require('express-validator');
 
@@ -25,18 +25,19 @@ router.post('/login', [
 ], async (req, res) => {
   const { email, password } = req.body;
   try {
-    const db = getDb();
-    
-    let user = db.admins.find(u => u.email === email);
+    // Search in all three tables
+    let { data: user, error: adminError } = await supabase.from('admins').select('*').eq('email', email).single();
     let type = 'admin';
 
     if (!user) {
-      user = db.employers.find(u => u.email === email);
+      const { data: employer, error: empError } = await supabase.from('employers').select('*').eq('email', email).single();
+      user = employer;
       type = 'employer';
     }
     
     if (!user) {
-      user = db.graduates.find(u => u.email === email);
+      const { data: graduate, error: gradError } = await supabase.from('graduates').select('*').eq('email', email).single();
+      user = graduate;
       type = 'graduate';
     }
 
@@ -44,7 +45,7 @@ router.post('/login', [
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Support both hashed and legacy plaintext passwords during transition
+    // Bcrypt comparison
     let isMatch = false;
     if (user.password && user.password.startsWith('$2')) {
       isMatch = await bcrypt.compare(password, user.password);
@@ -89,10 +90,12 @@ router.post('/register/:type', [
   const { email, password, name, phone, course, student_number, company_name, industry, location } = req.body;
   
   try {
-    const db = getDb();
-    
-    // Simple uniqueness check
-    if (db.graduates.some(u => u.email === email) || db.employers.some(u => u.email === email) || db.admins.some(u => u.email === email)) {
+    // Uniqueness check across all tables
+    const { data: adminCheck } = await supabase.from('admins').select('email').eq('email', email);
+    const { data: employerCheck } = await supabase.from('employers').select('email').eq('email', email);
+    const { data: graduateCheck } = await supabase.from('graduates').select('email').eq('email', email);
+
+    if (adminCheck?.length || employerCheck?.length || graduateCheck?.length) {
       return res.status(400).json({ error: 'Email already exists' });
     }
 
@@ -100,20 +103,21 @@ router.post('/register/:type', [
     const hashedPassword = await bcrypt.hash(password, 10);
     
     if (type === 'graduate') {
-      db.graduates.push({
+      const { error } = await supabase.from('graduates').insert([{
         graduate_id: Date.now(),
-        student_number, full_name: name, email, phone, course, password: hashedPassword, status: 'pending', created_at: new Date().toISOString()
-      });
+        student_number, full_name: name, email, phone, course, password: hashedPassword, status: 'pending'
+      }]);
+      if (error) throw error;
     } else if (type === 'employer') {
-      db.employers.push({
+      const { error } = await supabase.from('employers').insert([{
         employer_id: Date.now(),
         company_name, industry, email, phone, location, password: hashedPassword, status: 'pending'
-      });
+      }]);
+      if (error) throw error;
     } else {
       return res.status(400).json({ error: 'Invalid type' });
     }
     
-    saveDb(db);
     res.status(201).json({ message: 'Registration successful. Waiting for admin approval.' });
   } catch (error) {
     console.error('Registration error:', error);

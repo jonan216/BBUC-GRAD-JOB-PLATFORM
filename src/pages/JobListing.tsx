@@ -6,21 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { fetchWithAuth } from '@/lib/api';
 
 const PAGE_SIZE = 6;
-
-const fetchWithAuth = async (url: string) => {
-  const token = localStorage.getItem('token');
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-  const res = await fetch(url, { headers });
-  if (!res.ok) {
-    throw new Error('Request failed');
-  }
-  return res.json();
-};
 
 const JobListing = () => {
   const [search, setSearch] = useState('');

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import { useToast } from '@/hooks/use-toast';
+import { apiUrl } from '@/lib/api';
 
 const GraduateLogin = () => {
   const [email, setEmail] = useState('');
@@ -15,19 +16,19 @@ const GraduateLogin = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(apiUrl('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         toast({ title: 'Login Failed', description: data.error, variant: 'destructive' });
         return;
       }
-      
+
       if (data.user.role !== 'graduate' && data.user.role !== 'admin') {
         toast({ title: 'Invalid Role', description: 'Please use the Employer login page for employer accounts.', variant: 'destructive' });
         return;
@@ -35,9 +36,9 @@ const GraduateLogin = () => {
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      
+
       toast({ title: 'Logged in successfully', description: 'Welcome back to the graduate portal!' });
-      
+
       navigate(data.user.role === 'admin' ? '/dashboard/admin' : '/dashboard/graduate');
     } catch (error) {
       toast({ title: 'Error', description: 'Could not connect to server', variant: 'destructive' });
@@ -48,7 +49,7 @@ const GraduateLogin = () => {
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <Link to="/" className="mb-8 flex items-center justify-center gap-2">
-            <img src="/logo.png" className="h-10 w-10 object-contain" alt="UCU Logo" />
+          <img src="/logo.png" className="h-10 w-10 object-contain" alt="UCU Logo" />
           <span className="font-display text-xl font-bold tracking-tight">BBUC GRADUATES JOB PLATFORM</span>
         </Link>
 

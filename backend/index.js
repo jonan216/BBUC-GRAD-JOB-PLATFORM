@@ -1,17 +1,14 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-const path = require('path');
 const seedAdmin = require('./seed');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const jobsRoutes = require('./routes/jobs');
 const profileRoutes = require('./routes/profile');
 const applicationsRoutes = require('./routes/applications');
-const { initDb } = require('./database');
-
-dotenv.config();
+const publicRoutes = require('./routes/public');
 
 const app = express();
 app.use(cors());
@@ -26,6 +23,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/applications', applicationsRoutes);
+app.use('/api/public', publicRoutes);
 
 // Global Error Handler - prevent HTML responses for API errors
 app.use((err, req, res, next) => {
@@ -45,13 +43,12 @@ const PORT = process.env.PORT || 5000;
 
 async function startServer() {
   try {
-    console.log('🔄 Initializing database and seeding admin...');
-    await initDb();
+    console.log('🚀 Starting server and seeding admin in Supabase...');
     await seedAdmin();
     
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 BBUC Backend running on http://0.0.0.0:${PORT}`);
-      console.log(`✨ API ready for requests`);
+      console.log(`✨ API ready for requests (Connected to Supabase)`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);

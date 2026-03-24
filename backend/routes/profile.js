@@ -2,31 +2,47 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { getDb, saveDb } = require('../database');
+const supabase = require('../supabase');
 const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/me', authenticate, (req, res) => {
-  const db = getDb();
-  let user = null;
+router.get('/me', authenticate, async (req, res) => {
+  try {
+    let table = '';
+    let idField = '';
+    
+    if (req.user.role === 'graduate') {
+      table = 'graduates';
+      idField = 'graduate_id';
+    } else if (req.user.role === 'employer') {
+      table = 'employers';
+      idField = 'employer_id';
+    } else if (req.user.role === 'admin') {
+      table = 'admins';
+      idField = 'admin_id';
+    }
 
-  if (req.user.role === 'graduate') {
-    user = db.graduates.find(g => g.graduate_id === req.user.id);
-    if (user && !user.skills) user.skills = ['Communication', 'Teamwork', 'Problem Solving']; // Defaults if missing
-  } else if (req.user.role === 'employer') {
-    user = db.employers.find(e => e.employer_id === req.user.id);
-  } else if (req.user.role === 'admin') {
-    user = db.admins.find(a => a.admin_id === req.user.id || a.email === req.user.email);
+    const { data: user, error } = await supabase
+      .from(table)
+      .select('*')
+      .eq(idField, req.user.id)
+      .single();
+
+    if (error || !user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (req.user.role === 'graduate' && !user.skills) {
+      user.skills = ['Communication', 'Teamwork', 'Problem Solving'];
+    }
+
+    // Obscure password
+    const { password, ...safeUser } = user;
+    res.json(safeUser);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
   }
-
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
-
-  // Obscure password
-  const { password, ...safeUser } = user;
-  res.json(safeUser);
 });
 
 // Configure multer for CV uploads
@@ -67,7 +83,7 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
-router.post('/cv', authenticate, upload.single('cv'), (req, res) => {
+router.post('/cv', authenticate, upload.single('cv'), async (req, res) => {
   if (req.user.role !== 'graduate') {
     return res.status(403).json({ error: 'Only graduates can upload CVs' });
   }
@@ -76,21 +92,22 @@ router.post('/cv', authenticate, upload.single('cv'), (req, res) => {
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
-  const db = getDb();
-  const index = db.graduates.findIndex(g => g.graduate_id === req.user.id);
-  
-  if (index === -1) {
-    return res.status(404).json({ error: 'Graduate profile not found' });
+  try {
+    const cv_url = `/uploads/${req.file.filename}`;
+    const { error } = await supabase
+      .from('graduates')
+      .update({ cv_url })
+      .eq('graduate_id', req.user.id);
+
+    if (error) throw error;
+
+    res.json({ 
+      message: 'CV uploaded successfully', 
+      cv_url 
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error updating profile' });
   }
-
-  // Save the relative path
-  db.graduates[index].cv_url = `/uploads/${req.file.filename}`;
-  saveDb(db);
-
-  res.json({ 
-    message: 'CV uploaded successfully', 
-    cv_url: db.graduates[index].cv_url 
-  });
 });
 
 module.exports = router;

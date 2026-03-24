@@ -8,26 +8,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
+import { fetchWithAuth } from '@/lib/api';
 
 const navItems = [
   { label: 'Dashboard', href: '#overview', icon: LayoutDashboard },
   { label: "User's Accounts", href: '#accounts', icon: UserCog },
 ];
-
-const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-  const token = localStorage.getItem('token');
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...options.headers,
-  };
-  const res = await fetch(url, { ...options, headers });
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || 'Request failed');
-  }
-  return res.json();
-};
 
 const AdminDashboard = () => {
   const { toast } = useToast();

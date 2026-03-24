@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { fetchWithAuth, apiUrl } from '@/lib/api';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard/graduate', icon: LayoutDashboard },
@@ -19,24 +20,6 @@ const statusColor: Record<string, string> = {
   applied: 'bg-muted text-muted-foreground',
   shortlisted: 'bg-brand-gold/20 text-accent-foreground',
   rejected: 'bg-destructive/10 text-destructive',
-};
-
-const fetchWithAuth = async (url: string) => {
-  const token = localStorage.getItem('token');
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-  const res = await fetch(url, { headers });
-  if (!res.ok) {
-    let error = 'Request failed';
-    try {
-      const data = await res.json();
-      error = data.error || error;
-    } catch (e) {}
-    throw new Error(error);
-  }
-  return res.json();
 };
 
 const GraduateDashboard = () => {
@@ -72,7 +55,7 @@ const GraduateDashboard = () => {
     setIsUploading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/profile/cv', {
+      const res = await fetch(apiUrl('/api/profile/cv'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

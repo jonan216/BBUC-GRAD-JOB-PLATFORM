@@ -6,21 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Building2, Clock, ArrowLeft, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
-const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-  const token = localStorage.getItem('token');
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...options.headers,
-  };
-  const res = await fetch(url, { ...options, headers });
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || 'Request failed');
-  }
-  return res.json();
-};
+import { fetchWithAuth } from '@/lib/api';
 
 const JobDetail = () => {
   const { id } = useParams();

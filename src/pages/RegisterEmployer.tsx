@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 import { useToast } from '@/hooks/use-toast';
+import { apiUrl } from '@/lib/api';
 
 const RegisterEmployer = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const RegisterEmployer = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/auth/register/employer', {
+      const res = await fetch(apiUrl('/api/auth/register/employer'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

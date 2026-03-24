@@ -3,11 +3,42 @@ import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import JobCard from '@/components/JobCard';
-import { mockJobs, statsData } from '@/lib/mock-data';
 import { motion } from 'framer-motion';
-import { Building2, Shield, ArrowRight, Users, Briefcase, TrendingUp } from 'lucide-react';
+import { Building2, Shield, ArrowRight, Users, Briefcase, TrendingUp, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+
+const fetchPublicStats = async () => {
+  const res = await fetch('/api/public/stats');
+  if (!res.ok) throw new Error('Failed to fetch stats');
+  return res.json();
+};
+
+const fetchLatestJobs = async () => {
+  const res = await fetch('/api/public/latest-jobs');
+  if (!res.ok) throw new Error('Failed to fetch jobs');
+  return res.json();
+};
 
 const Landing = () => {
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ['public-stats'],
+    queryFn: fetchPublicStats,
+  });
+
+  const { data: latestJobs, isLoading: jobsLoading } = useQuery({
+    queryKey: ['latest-jobs'],
+    queryFn: fetchLatestJobs,
+  });
+
+  // Fallback data if needed
+  const displayStats = stats || {
+    totalGraduates: 0,
+    totalEmployers: 0,
+    totalJobs: 0,
+    placementRate: 85,
+    hiredThisMonth: 0
+  };
+
   return (
     <div className="min-h-screen relative overflow-hidden selection:bg-brand-gold selection:text-emerald-950">
       {/* Full Page Background Image */}
@@ -47,7 +78,7 @@ const Landing = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-gold opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-gold"></span>
               </span>
-              {statsData.hiredThisMonth} graduates hired this month
+              {statsLoading ? '...' : displayStats.hiredThisMonth} graduates hired this month
             </motion.div>
             
             <h1 className="font-display text-5xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl mb-6 text-white leading-[1.1] drop-shadow-2xl">
@@ -87,10 +118,10 @@ const Landing = () => {
         <div className="container px-4">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4 max-w-5xl mx-auto">
             {[
-              { label: 'Registered Graduates', value: statsData.totalGraduates.toLocaleString(), icon: Users, color: 'text-white' },
-              { label: 'Partner Employers', value: statsData.totalEmployers, icon: Building2, color: 'text-brand-gold' },
-              { label: 'Active Jobs', value: statsData.totalJobs, icon: Briefcase, color: 'text-white' },
-              { label: 'Placement Rate', value: `${statsData.placementRate}%`, icon: TrendingUp, color: 'text-brand-gold' },
+              { label: 'Registered Graduates', value: displayStats.totalGraduates.toLocaleString(), icon: Users, color: 'text-white' },
+              { label: 'Partner Employers', value: displayStats.totalEmployers, icon: Building2, color: 'text-brand-gold' },
+              { label: 'Active Jobs', value: displayStats.totalJobs, icon: Briefcase, color: 'text-white' },
+              { label: 'Placement Rate', value: `${displayStats.placementRate}%`, icon: TrendingUp, color: 'text-brand-gold' },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
@@ -103,7 +134,9 @@ const Landing = () => {
                 <div className={`mb-4 p-3 rounded-xl bg-white/5 group-hover:bg-white/10 transition-colors`}>
                   <stat.icon className={`h-6 w-6 ${stat.color}`} />
                 </div>
-                <p className="font-display text-4xl font-black tracking-tight mb-1 text-white">{stat.value}</p>
+                <p className="font-display text-4xl font-black tracking-tight mb-1 text-white">
+                  {statsLoading ? '...' : stat.value}
+                </p>
                 <p className="text-sm font-semibold text-white/70 uppercase tracking-wider">{stat.label}</p>
               </motion.div>
             ))}
@@ -157,9 +190,19 @@ const Landing = () => {
             </Link>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
-            {mockJobs.slice(0, 3).map((job, i) => (
-              <JobCard key={job.id} job={job} index={i} />
-            ))}
+            {jobsLoading ? (
+              <div className="col-span-full flex justify-center py-12">
+                <Loader2 className="h-10 w-10 animate-spin text-brand-gold" />
+              </div>
+            ) : (latestJobs || []).length === 0 ? (
+              <div className="col-span-full text-center py-12 bg-white/5 rounded-3xl backdrop-blur-sm border border-white/10">
+                <p className="text-xl text-white/60">No job opportunities posted yet. Check back soon!</p>
+              </div>
+            ) : (
+              (latestJobs || []).map((job: any, i: number) => (
+                <JobCard key={job.id} job={job} index={i} />
+              ))
+            )}
           </div>
         </div>
       </section>
