@@ -45,21 +45,8 @@ router.get('/me', authenticate, async (req, res) => {
   }
 });
 
-// Configure multer for CV uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Ensure the uploads directory exists relative to the backend folder
-    const uploadPath = path.join(__dirname, '../uploads');
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'cv-' + req.user.id + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Configure multer for CV uploads (using memory storage)
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage,
@@ -93,19 +80,42 @@ router.post('/cv', authenticate, upload.single('cv'), async (req, res) => {
   }
 
   try {
-    const cv_url = `/uploads/${req.file.filename}`;
-    const { error } = await supabase
+    const file = req.file;
+    const fileExt = path.extname(file.originalname).toLowerCase();
+    const fileName = `cv-${req.user.id}-${Date.now()}${fileExt}`;
+
+    // 1. Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('cvs')
+      .upload(fileName, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true
+      });
+
+    if (uploadError) {
+      console.error('Supabase Storage Error:', uploadError);
+      return res.status(500).json({ error: 'Failed to upload file to storage' });
+    }
+
+    // 2. Get Public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('cvs')
+      .getPublicUrl(fileName);
+
+    // 3. Update graduate profile in database
+    const { error: updateError } = await supabase
       .from('graduates')
-      .update({ cv_url })
+      .update({ cv_url: publicUrl })
       .eq('graduate_id', req.user.id);
 
-    if (error) throw error;
+    if (updateError) throw updateError;
 
     res.json({ 
       message: 'CV uploaded successfully', 
-      cv_url 
+      cv_url: publicUrl 
     });
   } catch (error) {
+    console.error('CV Upload Error:', error);
     res.status(500).json({ error: 'Server error updating profile' });
   }
 });
